@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"com.fisiocare"},{"l":"com.fisiocare.dao"},{"l":"com.fisiocare.database"},{"l":"com.fisiocare.handler"},{"l":"com.fisiocare.model"},{"l":"com.fisiocare.service"}];updateSearchResults();
