@@ -2,6 +2,7 @@
    FisioCare - Página: Agendamentos
    ================================================ */
 Pages.agendamentos = async function(container) {
+  if(!App.podeAcessar('agendamentos')) return;
   container.innerHTML = `
     <div class="page-header">
       <h2>📅 Agendamentos</h2>

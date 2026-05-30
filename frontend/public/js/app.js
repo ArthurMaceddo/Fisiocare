@@ -58,18 +58,18 @@ const App = {
     document.getElementById('sb-perfil').textContent = u.perfil;
     document.getElementById('sb-avatar').textContent = u.nome.charAt(0).toUpperCase();
 
-    // ── Controle de menus por perfil ──────────────
-    // admin-only  → só ADMINISTRADOR vê
-    // staff-only  → só ADMINISTRADOR e FUNCIONARIO veem (paciente não vê)
-    if (u.perfil !== 'ADMINISTRADOR') {
-      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
-    if (u.perfil === 'PACIENTE') {
-      document.querySelectorAll('.staff-only').forEach(el => el.style.display = 'none');
-    }
-
+    // Valida e oculta os menus diretamente via JS usando a função podeAcessar
     document.querySelectorAll('.nav-item[data-page]').forEach(el => {
-      el.addEventListener('click', () => this.navegar(el.dataset.page));
+      const page = el.dataset.page;
+      if (!this.podeAcessar(page)) {
+        el.style.display = 'none'; // Esconde menus não autorizados
+      } else {
+        el.style.display = 'block';
+        // Remove listeners duplicados recriando o elemento
+        const novoEl = el.cloneNode(true);
+        el.replaceWith(novoEl);
+        novoEl.addEventListener('click', () => this.navegar(novoEl.dataset.page));
+      }
     });
 
     this.navegar('dashboard');

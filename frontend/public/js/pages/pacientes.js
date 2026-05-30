@@ -2,6 +2,7 @@
    FisioCare - Página: Pacientes
    ================================================ */
 Pages.pacientes = async function(container) {
+  if(!App.podeAcessar('paciente')) return;
   container.innerHTML = `
     <div class="page-header">
       <h2>👥 Pacientes</h2>
