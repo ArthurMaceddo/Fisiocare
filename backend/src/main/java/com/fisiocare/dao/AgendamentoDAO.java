@@ -10,15 +10,15 @@ import java.util.List;
 public class AgendamentoDAO {
 
     private static final String SELECT_JOIN =
-        "SELECT a.*, up.nome as paciente_nome, up.cpf as paciente_cpf, uf.nome as fisio_nome " +
-        "FROM agendamentos a " +
-        "JOIN pacientes p ON a.paciente_id = p.id " +
-        "JOIN usuarios up ON p.usuario_id = up.id " +
-        "JOIN usuarios uf ON a.fisio_id = uf.id ";
+            "SELECT a.*, up.nome as paciente_nome, up.cpf as paciente_cpf, uf.nome as fisio_nome " +
+                    "FROM agendamentos a " +
+                    "JOIN pacientes p ON a.paciente_id = p.id " +
+                    "JOIN usuarios up ON p.usuario_id = up.id " +
+                    "JOIN usuarios uf ON a.fisio_id = uf.id ";
 
     public Long inserir(Agendamento a) {
         String sql = "INSERT INTO agendamentos (paciente_id, fisio_id, data_hora, tratamento, qtd_sessoes, observacoes) " +
-                     "VALUES (?,?,?,?,?,?) RETURNING id";
+                "VALUES (?,?,?,?,?,?) RETURNING id";
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement s = c.prepareStatement(sql)) {
             s.setLong(1, a.getPacienteId());

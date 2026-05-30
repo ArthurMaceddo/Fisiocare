@@ -103,7 +103,7 @@ const Funcionarios = {
       this.renderTabela(this.lista);
     } catch(e) {
       document.getElementById('tabela-funcionarios').innerHTML =
-        `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
+          `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
     }
   },
 
@@ -136,8 +136,8 @@ const Funcionarios = {
               <td>
                 <button class="btn btn-secondary btn-sm" onclick="Funcionarios.abrirFormEditar(${f.id})">✏️ Editar</button>
                 ${f.id !== App.usuario.id
-                  ? `<button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="Funcionarios.deletar(${f.id})">🗑️</button>`
-                  : ''}
+        ? `<button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="Funcionarios.deletar(${f.id})">🗑️</button>`
+        : ''}
               </td>
             </tr>
           `).join('')}
@@ -148,8 +148,8 @@ const Funcionarios = {
   filtrar(texto) {
     const q = texto.toLowerCase();
     this.renderTabela(this.lista.filter(f =>
-      (f.nome || '').toLowerCase().includes(q) ||
-      (f.cpf  || '').toLowerCase().includes(q)
+        (f.nome || '').toLowerCase().includes(q) ||
+        (f.cpf  || '').toLowerCase().includes(q)
     ));
   },
 
@@ -157,7 +157,7 @@ const Funcionarios = {
     this.editandoId = null;
     document.getElementById('modal-func-titulo').textContent = 'Novo Funcionário';
     ['func-nome','func-cpf','func-nasc','func-tel','func-email','func-end','func-senha','func-senha2']
-      .forEach(id => document.getElementById(id).value = '');
+        .forEach(id => document.getElementById(id).value = '');
     document.getElementById('func-perfil').value = 'FUNCIONARIO';
     document.getElementById('modal-func').style.display = 'flex';
   },

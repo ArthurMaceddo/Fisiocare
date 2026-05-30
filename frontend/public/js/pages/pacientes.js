@@ -103,7 +103,7 @@ const Pacientes = {
       this.renderTabela(this.lista);
     } catch(e) {
       document.getElementById('tabela-pacientes').innerHTML =
-        `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
+          `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
     }
   },
 
@@ -137,8 +137,8 @@ const Pacientes = {
               <td>
                 <button class="btn btn-secondary btn-sm" onclick="Pacientes.abrirFormEditar(${p.id})">✏️ Editar</button>
                 ${App.usuario.perfil === 'ADMINISTRADOR'
-                  ? `<button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="Pacientes.deletar(${p.id})">🗑️</button>`
-                  : ''}
+        ? `<button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="Pacientes.deletar(${p.id})">🗑️</button>`
+        : ''}
               </td>
             </tr>
           `).join('')}
@@ -149,8 +149,8 @@ const Pacientes = {
   filtrar(texto) {
     const q = texto.toLowerCase();
     const filtrado = this.lista.filter(p =>
-      (p.nome  || '').toLowerCase().includes(q) ||
-      (p.cpf   || '').toLowerCase().includes(q)
+        (p.nome  || '').toLowerCase().includes(q) ||
+        (p.cpf   || '').toLowerCase().includes(q)
     );
     this.renderTabela(filtrado);
   },
@@ -159,7 +159,7 @@ const Pacientes = {
     this.editandoId = null;
     document.getElementById('modal-pac-titulo').textContent = 'Novo Paciente';
     ['pac-nome','pac-cpf','pac-nasc','pac-tel','pac-email','pac-end',
-     'pac-problema','pac-obs','pac-senha'].forEach(id => {
+      'pac-problema','pac-obs','pac-senha'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('pac-tratamento').value = '';

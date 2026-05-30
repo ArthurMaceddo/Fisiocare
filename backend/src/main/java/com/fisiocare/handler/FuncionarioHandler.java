@@ -74,7 +74,7 @@ public class FuncionarioHandler extends BaseHandler {
         u.setTelefone(body.get("telefone").getAsString());
         u.setDataNasc(body.get("dataNasc").getAsString());
         u.setEndereco(body.get("endereco").getAsString());
-        u.setSenha(AutenticacaoService.hashSenha(body.get("senha").getAsString()));
+        u.setSenha(body.get("senha").getAsString());
         u.setPerfil(body.get("perfil").getAsString());
 
         Long novoId = dao.inserir(u);
@@ -103,8 +103,7 @@ public class FuncionarioHandler extends BaseHandler {
         dao.atualizar(u);
 
         if (body.has("senha") && !body.get("senha").getAsString().isBlank()) {
-            dao.atualizarSenha(id, AutenticacaoService.hashSenha(body.get("senha").getAsString()));
-        }
+            dao.atualizarSenha(id, body.get("senha").getAsString());        }
 
         u.setSenha(null);
         ok(ex, u);

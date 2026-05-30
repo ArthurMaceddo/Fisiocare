@@ -3,11 +3,10 @@
    ================================================ */
 const App = {
 
-  usuario: null,   // { id, nome, perfil, token }
+  usuario: null,
 
   // ─── Inicialização ────────────────────────────
   init() {
-    // Tentar restaurar sessão salva
     const token = localStorage.getItem('fc_token');
     const uStr  = localStorage.getItem('fc_usuario');
     if (token && uStr) {
@@ -18,18 +17,16 @@ const App = {
         return;
       } catch(e) { /* ignora */ }
     }
-
-    // Enter no campo de senha faz login
     document.getElementById('login-senha')
-      .addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
+        .addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
     document.getElementById('login-email')
-      .addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
+        .addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
   },
 
   // ─── Login ────────────────────────────────────
   async login() {
-    const email = document.getElementById('login-email').value.trim();
-    const senha = document.getElementById('login-senha').value;
+    const email  = document.getElementById('login-email').value.trim();
+    const senha  = document.getElementById('login-senha').value;
     const erroEl = document.getElementById('login-erro');
     erroEl.style.display = 'none';
 
@@ -56,18 +53,21 @@ const App = {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
 
-    // Sidebar: nome, avatar, perfil
     const u = this.usuario;
     document.getElementById('sb-nome').textContent   = u.nome;
     document.getElementById('sb-perfil').textContent = u.perfil;
     document.getElementById('sb-avatar').textContent = u.nome.charAt(0).toUpperCase();
 
-    // Ocultar itens exclusivos de admin se não for admin
+    // ── Controle de menus por perfil ──────────────
+    // admin-only  → só ADMINISTRADOR vê
+    // staff-only  → só ADMINISTRADOR e FUNCIONARIO veem (paciente não vê)
     if (u.perfil !== 'ADMINISTRADOR') {
       document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
     }
+    if (u.perfil === 'PACIENTE') {
+      document.querySelectorAll('.staff-only').forEach(el => el.style.display = 'none');
+    }
 
-    // Navegação
     document.querySelectorAll('.nav-item[data-page]').forEach(el => {
       el.addEventListener('click', () => this.navegar(el.dataset.page));
     });
@@ -75,21 +75,24 @@ const App = {
     this.navegar('dashboard');
   },
 
-  // ─── Logout ───────────────────────────────────
-  async logout() {
-    try { await Api.logout(); } catch(e) { /* ignora */ }
-    Api.setToken(null);
-    localStorage.removeItem('fc_usuario');
-    this.usuario = null;
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-senha').value = '';
+  // ─── Guarda de permissão ──────────────────────
+  podeAcessar(page) {
+    const perfil = this.usuario?.perfil;
+    // Paciente: apenas dashboard e evolução
+    const rotasPaciente = ['dashboard', 'evolucao'];
+    if (perfil === 'PACIENTE' && !rotasPaciente.includes(page)) return false;
+    // Funcionário: não acessa cadastro de funcionários
+    if (perfil === 'FUNCIONARIO' && page === 'funcionarios') return false;
+    return true;
   },
 
   // ─── Navegação entre páginas ──────────────────
   navegar(page) {
-    // Atualizar sidebar
+    if (!this.podeAcessar(page)) {
+      Toast.show('Você não tem permissão para acessar esta área.', 'error');
+      return;
+    }
+
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.page === page);
     });
@@ -104,6 +107,18 @@ const App = {
       case 'agendamentos': Pages.agendamentos(container); break;
       case 'evolucao':     Pages.evolucao(container);     break;
     }
+  },
+
+  // ─── Logout ───────────────────────────────────
+  async logout() {
+    try { await Api.logout(); } catch(e) { /* ignora */ }
+    Api.setToken(null);
+    localStorage.removeItem('fc_usuario');
+    this.usuario = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-senha').value = '';
   }
 };
 
@@ -133,12 +148,12 @@ function formatarDataHora(str) {
 
 function badgeStatus(status) {
   const map = {
-    AGENDADA:  'badge-info',
-    REALIZADA: 'badge-success',
-    CANCELADA: 'badge-danger',
-    MELHORANDO:'badge-success',
-    ESTAVEL:   'badge-warning',
-    PIORANDO:  'badge-danger'
+    AGENDADA:   'badge-info',
+    REALIZADA:  'badge-success',
+    CANCELADA:  'badge-danger',
+    MELHORANDO: 'badge-success',
+    ESTAVEL:    'badge-warning',
+    PIORANDO:   'badge-danger'
   };
   return `<span class="badge ${map[status] || 'badge-info'}">${status || '-'}</span>`;
 }
@@ -147,5 +162,4 @@ function confirmar(msg) {
   return confirm(msg);
 }
 
-// ─── Iniciar app quando DOM estiver pronto ────────
 document.addEventListener('DOMContentLoaded', () => App.init());

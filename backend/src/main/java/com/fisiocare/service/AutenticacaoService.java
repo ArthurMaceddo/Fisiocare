@@ -25,8 +25,7 @@ public class AutenticacaoService {
         Usuario u = dao.buscarPorEmail(email);
         if (u == null || !u.getAtivo()) return null;
 
-        String hash = hashSenha(senha);
-        if (!hash.equals(u.getSenha())) return null;
+        if (!senha.equals(u.getSenha())) return null;
 
         // Remove tokens antigos do mesmo usuário
         sessoes.entrySet().removeIf(e -> e.getValue().getId().equals(u.getId()));

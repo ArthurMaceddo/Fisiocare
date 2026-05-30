@@ -12,12 +12,13 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * GET    /api/pacientes          — listar todos
- * POST   /api/pacientes          — criar paciente
- * GET    /api/pacientes/{id}     — buscar por ID
- * PUT    /api/pacientes/{id}     — atualizar
- * DELETE /api/pacientes/{id}     — desativar
- * GET    /api/pacientes/cpf/{cpf} — buscar por CPF
+ * GET    /api/pacientes                — listar todos (staff)
+ * POST   /api/pacientes                — criar paciente
+ * GET    /api/pacientes/{id}           — buscar por ID
+ * PUT    /api/pacientes/{id}           — atualizar
+ * DELETE /api/pacientes/{id}           — desativar (ADMIN)
+ * GET    /api/pacientes/cpf/{cpf}      — buscar por CPF
+ * GET    /api/pacientes/usuario/{uid}  — buscar pelo usuarioId (usado pelo próprio paciente)
  */
 public class PacienteHandler extends BaseHandler {
 
@@ -43,39 +44,70 @@ public class PacienteHandler extends BaseHandler {
             return;
         }
 
-        // Operações com ID
+        // GET /api/pacientes/usuario/{uid}
+        if (path.contains("/usuario/") && "GET".equals(metodo)) {
+            String uidStr = path.substring(path.lastIndexOf("/usuario/") + 9);
+            try {
+                Long uid = Long.parseLong(uidStr);
+
+                // Paciente só pode ver os próprios dados
+                if ("PACIENTE".equals(logado.getPerfil()) && !uid.equals(logado.getId())) {
+                    erro(ex, 403, "Acesso negado."); return;
+                }
+
+                Paciente p = pacienteDAO.buscarPorUsuarioId(uid);
+                if (p == null) { erro(ex, 404, "Paciente não encontrado."); return; }
+                ok(ex, p);
+            } catch (NumberFormatException e) {
+                erro(ex, 400, "ID inválido.");
+            }
+            return;
+        }
+
+        // Operações com ID numérico
         Long id = idDaUrl(ex, "/api/pacientes");
 
         if (id != null) {
             switch (metodo) {
-                case "GET"    -> buscarPorId(ex, id);
+                case "GET"    -> buscarPorId(ex, id, logado);
                 case "PUT"    -> atualizar(ex, id, logado);
                 case "DELETE" -> deletar(ex, id, logado);
                 default       -> erro(ex, 405, "Método não permitido.");
             }
         } else {
             switch (metodo) {
-                case "GET"  -> listar(ex);
+                case "GET"  -> listar(ex, logado);
                 case "POST" -> criar(ex, logado);
                 default     -> erro(ex, 405, "Método não permitido.");
             }
         }
     }
 
-    private void listar(HttpExchange ex) throws IOException {
+    private void listar(HttpExchange ex, Usuario logado) throws IOException {
+        // Paciente não pode listar todos — bloqueio no backend também
+        if ("PACIENTE".equals(logado.getPerfil())) {
+            erro(ex, 403, "Acesso negado."); return;
+        }
         ok(ex, pacienteDAO.listarTodos());
     }
 
-    private void buscarPorId(HttpExchange ex, Long id) throws IOException {
+    private void buscarPorId(HttpExchange ex, Long id, Usuario logado) throws IOException {
         Paciente p = pacienteDAO.buscarPorId(id);
         if (p == null) { erro(ex, 404, "Paciente não encontrado."); return; }
+
+        // Paciente só pode ver o próprio registro
+        if ("PACIENTE".equals(logado.getPerfil()) && !p.getUsuarioId().equals(logado.getId())) {
+            erro(ex, 403, "Acesso negado."); return;
+        }
         ok(ex, p);
     }
 
     private void criar(HttpExchange ex, Usuario logado) throws IOException {
-        JsonObject body = lerJson(ex, JsonObject.class);
+        if ("PACIENTE".equals(logado.getPerfil())) {
+            erro(ex, 403, "Sem permissão para criar pacientes."); return;
+        }
 
-        // Validações básicas
+        JsonObject body = lerJson(ex, JsonObject.class);
         String[] obrigatorios = {"nome","email","cpf","telefone","dataNasc","endereco","problema","tratamento"};
         for (String campo : obrigatorios) {
             if (!body.has(campo) || body.get(campo).getAsString().isBlank()) {
@@ -89,7 +121,6 @@ public class PacienteHandler extends BaseHandler {
         if (usuarioDAO.emailExiste(email)) { erro(ex, 409, "Email já cadastrado."); return; }
         if (usuarioDAO.cpfExiste(cpf))     { erro(ex, 409, "CPF já cadastrado.");   return; }
 
-        // Criar usuario com perfil PACIENTE
         Usuario u = new Usuario();
         u.setNome(body.get("nome").getAsString());
         u.setEmail(email);
@@ -97,14 +128,14 @@ public class PacienteHandler extends BaseHandler {
         u.setTelefone(body.get("telefone").getAsString());
         u.setDataNasc(body.get("dataNasc").getAsString());
         u.setEndereco(body.get("endereco").getAsString());
-        u.setSenha(AutenticacaoService.hashSenha(body.has("senha") && !body.get("senha").getAsString().isBlank()
-                ? body.get("senha").getAsString() : cpf.replaceAll("[^0-9]", "")));
+        u.setSenha(body.has("senha") && !body.get("senha").getAsString().isBlank()
+                ? body.get("senha").getAsString()
+                : cpf.replaceAll("[^0-9]", ""));
         u.setPerfil("PACIENTE");
 
         Long usuarioId = usuarioDAO.inserir(u);
         if (usuarioId == null) { erro(ex, 500, "Erro ao criar usuário."); return; }
 
-        // Criar paciente
         Paciente p = new Paciente();
         p.setUsuarioId(usuarioId);
         p.setProblema(body.get("problema").getAsString());
@@ -114,13 +145,12 @@ public class PacienteHandler extends BaseHandler {
         Long pacienteId = pacienteDAO.inserir(p);
         if (pacienteId == null) { erro(ex, 500, "Erro ao criar paciente."); return; }
 
-        Paciente criado = pacienteDAO.buscarPorId(pacienteId);
-        created(ex, criado);
+        created(ex, pacienteDAO.buscarPorId(pacienteId));
     }
 
     private void atualizar(HttpExchange ex, Long id, Usuario logado) throws IOException {
-        if (!"ADMINISTRADOR".equals(logado.getPerfil()) && !"FUNCIONARIO".equals(logado.getPerfil())) {
-            erro(ex, 403, "Sem permissão."); return;
+        if ("PACIENTE".equals(logado.getPerfil())) {
+            erro(ex, 403, "Sem permissão para editar pacientes."); return;
         }
         JsonObject body = lerJson(ex, JsonObject.class);
         Paciente p = pacienteDAO.buscarPorId(id);
@@ -130,12 +160,13 @@ public class PacienteHandler extends BaseHandler {
         if (body.has("tratamento"))  p.setTratamento(body.get("tratamento").getAsString());
         if (body.has("observacoes")) p.setObservacoes(body.get("observacoes").getAsString());
 
-        // Atualizar dados do usuario também
         Usuario u = usuarioDAO.buscarPorId(p.getUsuarioId());
-        if (body.has("nome"))      u.setNome(body.get("nome").getAsString());
-        if (body.has("telefone"))  u.setTelefone(body.get("telefone").getAsString());
-        if (body.has("endereco"))  u.setEndereco(body.get("endereco").getAsString());
-        usuarioDAO.atualizar(u);
+        if (u != null) {
+            if (body.has("nome"))     u.setNome(body.get("nome").getAsString());
+            if (body.has("telefone")) u.setTelefone(body.get("telefone").getAsString());
+            if (body.has("endereco")) u.setEndereco(body.get("endereco").getAsString());
+            usuarioDAO.atualizar(u);
+        }
 
         pacienteDAO.atualizar(p);
         ok(ex, pacienteDAO.buscarPorId(id));

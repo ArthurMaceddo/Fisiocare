@@ -9,13 +9,6 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Arrays;
 
-/**
- * GET    /api/agendamentos          — listar todos
- * GET    /api/agendamentos/hoje     — agendamentos do dia
- * POST   /api/agendamentos          — criar
- * PUT    /api/agendamentos/{id}     — atualizar status
- * DELETE /api/agendamentos/{id}     — excluir (ADMIN)
- */
 public class AgendamentoHandler extends BaseHandler {
 
     private final AgendamentoDAO dao = new AgendamentoDAO();
@@ -45,13 +38,17 @@ public class AgendamentoHandler extends BaseHandler {
         } else {
             switch (mtd) {
                 case "GET"  -> ok(ex, dao.listarTodos());
-                case "POST" -> criar(ex);
+                case "POST" -> criar(ex, logado);
                 default     -> erro(ex, 405, "Método não permitido.");
             }
         }
     }
 
-    private void criar(HttpExchange ex) throws IOException {
+    private void criar(HttpExchange ex, Usuario logado) throws IOException {
+        if ("PACIENTE".equals(logado.getPerfil())) {
+            erro(ex, 403, "Pacientes não podem criar agendamentos."); return;
+        }
+
         JsonObject body = lerJson(ex, JsonObject.class);
         String[] obrig = {"pacienteId","fisioId","dataHora","tratamento","qtdSessoes"};
         for (String c : obrig) {

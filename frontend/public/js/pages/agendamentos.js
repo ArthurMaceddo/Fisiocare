@@ -118,7 +118,7 @@ const Agendamentos = {
       this.renderTabela(this.lista);
     } catch(e) {
       document.getElementById('tabela-agendamentos').innerHTML =
-        `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
+          `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
     }
   },
 
@@ -157,8 +157,8 @@ const Agendamentos = {
                   <button class="btn btn-danger btn-sm"  onclick="Agendamentos.mudarStatus(${a.id},'CANCELADA')">✖</button>
                 ` : ''}
                 ${App.usuario.perfil === 'ADMINISTRADOR'
-                  ? `<button class="btn btn-danger btn-sm" onclick="Agendamentos.deletar(${a.id})">🗑️</button>`
-                  : ''}
+        ? `<button class="btn btn-danger btn-sm" onclick="Agendamentos.deletar(${a.id})">🗑️</button>`
+        : ''}
               </td>
             </tr>
           `).join('')}
@@ -181,11 +181,11 @@ const Agendamentos = {
 
       const selPac = document.getElementById('agend-paciente');
       selPac.innerHTML = '<option value="">Selecione o paciente...</option>' +
-        pacientes.map(p => `<option value="${p.id}">${p.nome} - ${p.cpf}</option>`).join('');
+          pacientes.map(p => `<option value="${p.id}">${p.nome} - ${p.cpf}</option>`).join('');
 
       const selFisio = document.getElementById('agend-fisio');
       selFisio.innerHTML = '<option value="">Selecione o fisioterapeuta...</option>' +
-        fisios.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+          fisios.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
 
     } catch(e) { Toast.show('Erro ao carregar dados: ' + e.message, 'error'); }
 

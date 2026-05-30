@@ -10,12 +10,12 @@ import java.util.List;
 public class PacienteDAO {
 
     private static final String SELECT_JOIN =
-        "SELECT p.*, u.nome, u.email, u.cpf, u.telefone, u.data_nasc, u.endereco " +
-        "FROM pacientes p JOIN usuarios u ON p.usuario_id = u.id ";
+            "SELECT p.*, u.nome, u.email, u.cpf, u.telefone, u.data_nasc, u.endereco " +
+                    "FROM pacientes p JOIN usuarios u ON p.usuario_id = u.id ";
 
     public Long inserir(Paciente p) {
         String sql = "INSERT INTO pacientes (usuario_id, problema, tratamento, observacoes) " +
-                     "VALUES (?,?,?,?) RETURNING id";
+                "VALUES (?,?,?,?) RETURNING id";
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement s = c.prepareStatement(sql)) {
             s.setLong(1, p.getUsuarioId());

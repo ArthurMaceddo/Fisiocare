@@ -32,7 +32,7 @@ public class DatabaseConnection {
             config.setConnectionTimeout(10_000); // 10 secs
             config.setIdleTimeout(300_000); // 5 min
             config.setMaxLifetime(1_200_000); // 20 min
-            dataSource = new HikariDataSource(config); // criando objeto
+            dataSource = new HikariDataSource(config);
         } catch (Exception e) {
             System.err.println("Erro ao configurar pool de conexões: " + e.getMessage());
         }

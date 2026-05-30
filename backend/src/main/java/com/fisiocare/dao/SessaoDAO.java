@@ -10,15 +10,15 @@ import java.util.List;
 public class SessaoDAO {
 
     private static final String SELECT_JOIN =
-        "SELECT s.*, u.nome as paciente_nome " +
-        "FROM sessoes s " +
-        "JOIN pacientes p ON s.paciente_id = p.id " +
-        "JOIN usuarios u ON p.usuario_id = u.id ";
+            "SELECT s.*, u.nome as paciente_nome " +
+                    "FROM sessoes s " +
+                    "JOIN pacientes p ON s.paciente_id = p.id " +
+                    "JOIN usuarios u ON p.usuario_id = u.id ";
 
     public Long inserir(Sessao sessao) {
         String sql = "INSERT INTO sessoes (agendamento_id, paciente_id, data_sessao, dor_antes, dor_depois, " +
-                     "mob_antes, mob_depois, descricao, exercicios, avaliacao, observacoes, evolucao) " +
-                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id";
+                "mob_antes, mob_depois, descricao, exercicios, avaliacao, observacoes, evolucao) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id";
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement s = c.prepareStatement(sql)) {
             s.setLong(1, sessao.getAgendamentoId());
@@ -76,8 +76,8 @@ public class SessaoDAO {
 
     public int contarMes() {
         String sql = "SELECT COUNT(*) FROM sessoes " +
-                     "WHERE EXTRACT(YEAR FROM data_sessao)=EXTRACT(YEAR FROM NOW()) " +
-                     "AND EXTRACT(MONTH FROM data_sessao)=EXTRACT(MONTH FROM NOW())";
+                "WHERE EXTRACT(YEAR FROM data_sessao)=EXTRACT(YEAR FROM NOW()) " +
+                "AND EXTRACT(MONTH FROM data_sessao)=EXTRACT(MONTH FROM NOW())";
         try (Connection c = DatabaseConnection.getConnection();
              Statement s = c.createStatement()) {
             ResultSet rs = s.executeQuery(sql);

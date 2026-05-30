@@ -11,7 +11,7 @@ public class UsuarioDAO {
 
     public Long inserir(Usuario u) {
         String sql = "INSERT INTO usuarios (nome, email, cpf, telefone, data_nasc, endereco, senha, perfil) " +
-                     "VALUES (?,?,?,?,?,?,?,?) RETURNING id";
+                "VALUES (?,?,?,?,?,?,?,?) RETURNING id";
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement s = c.prepareStatement(sql)) {
             s.setString(1, u.getNome());

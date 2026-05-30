@@ -54,6 +54,9 @@ public class SessaoHandler extends BaseHandler {
     }
 
     private void criar(HttpExchange ex, Usuario logado) throws IOException {
+        if ("PACIENTE".equals(logado.getPerfil())) {
+            erro(ex, 403, "Pacientes não podem registrar sessões."); return;
+        }
         JsonObject body = lerJson(ex, JsonObject.class);
         String[] obrig = {"agendamentoId","pacienteId","dataSessao","descricao"};
         for (String c : obrig) {
@@ -68,9 +71,9 @@ public class SessaoHandler extends BaseHandler {
         s.setDataSessao(body.get("dataSessao").getAsString());
         s.setDescricao(body.get("descricao").getAsString());
         s.setDorAntes(body.has("dorAntes") && !body.get("dorAntes").isJsonNull()
-                      ? body.get("dorAntes").getAsInt() : null);
+                ? body.get("dorAntes").getAsInt() : null);
         s.setDorDepois(body.has("dorDepois") && !body.get("dorDepois").isJsonNull()
-                       ? body.get("dorDepois").getAsInt() : null);
+                ? body.get("dorDepois").getAsInt() : null);
         s.setMobAntes(body.has("mobAntes")   ? body.get("mobAntes").getAsString()   : null);
         s.setMobDepois(body.has("mobDepois") ? body.get("mobDepois").getAsString()  : null);
         s.setExercicios(body.has("exercicios") ? body.get("exercicios").getAsString() : null);

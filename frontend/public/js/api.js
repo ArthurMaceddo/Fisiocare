@@ -50,7 +50,8 @@ const Api = {
   pacientes: {
     listar:        ()    => Api.get('/pacientes'),
     buscarPorId:   (id)  => Api.get(`/pacientes/${id}`),
-    buscarPorCpf:  (cpf) => Api.get(`/pacientes/cpf/${cpf}`),
+    buscarPorCpf:      (cpf)   => Api.get(`/pacientes/cpf/${cpf}`),
+    buscarPorUsuarioId:(uid)   => Api.get(`/pacientes/usuario/${uid}`),
     criar:         (d)   => Api.post('/pacientes', d),
     atualizar:     (id, d) => Api.put(`/pacientes/${id}`, d),
     deletar:       (id)  => Api.delete(`/pacientes/${id}`)
